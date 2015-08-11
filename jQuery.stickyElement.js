@@ -1,8 +1,8 @@
-(function () {
-    function setup(element) {
+(function ($) {
+    $.fn.stickyElement = function () {
 
         var $document = $(document),
-            $recapDataContainer = $(element),
+            $recapDataContainer = this,
             recapDataContainerHeight,
             pos,
             newPos,
@@ -58,7 +58,8 @@
                 }
             }, 200);
         });
+		
+		return this;
     }
 
-    stickyElement = setup;
-}());
+}(jQuery));
