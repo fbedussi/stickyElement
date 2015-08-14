@@ -2,63 +2,72 @@
     function setup(element) {
 
         var $document = $(document),
-            $recapDataContainer = $(element),
-            recapDataContainerHeight,
+            $element = $(element),
+            elementHeight,
             pos,
             newPos,
-            asideHigherThanViewPort,
+            elementHigherThanViewPort,
             viewPortHeight,
-            originalAsideTop,
-			containerHeight;
+            elementOriginalAbsoluteTop,
+            elementOriginalRelativeTop,
+            containerAvailableHeight,
+            $parentElement = $element.parent();
 
+        function getElementCssTop() {
+            return $element.css('top').replace("auto", "0").replace("px", "");
+        }
         function initMeasures() {
-            recapDataContainerHeight = $recapDataContainer.outerHeight(true);
-            originalAsideTop = $recapDataContainer.offset().top;
+            elementHeight = $element.outerHeight(true);
+            elementOriginalAbsoluteTop = $element.offset().top - getElementCssTop();
+            elementOriginalRelativeTop = $element.position().top - $parentElement.css('padding-top').replace("px", "") - getElementCssTop();
             viewPortHeight = document.documentElement.clientHeight;
-            (recapDataContainerHeight > (viewPortHeight - originalAsideTop)) ? asideHigherThanViewPort = true : asideHigherThanViewPort = false;
-			containerHeight = $recapDataContainer.parent().height();
+            containerAvailableHeight = $parentElement.height() - elementOriginalRelativeTop;
+            (elementHeight > viewPortHeight) ? elementHigherThanViewPort = true : elementHigherThanViewPort = false;
         }
 
         initMeasures();
-        $(window).resize(function () {
-            initMeasures();
+
+        $parentElement.resize(function () {
+            setInterval(initMeasures, 100);
+            moveAside($document.scrollTop());
         });
 
         function moveAside(newPos) {
-            var asideTop = $recapDataContainer.offset().top,
-                newAsideTop = newPos - originalAsideTop,
-                asideBottom, windowBottom;
+            var currentElementRelativeTop = getElementCssTop(),
+                currentElementAbsoluteTop = $element.offset().top,
+                elementNewTop = newPos - elementOriginalAbsoluteTop,
+                elementBottom, windowBottom;
 
-            if (asideHigherThanViewPort) {
-                asideBottom = asideTop + recapDataContainerHeight;
+            if (elementHigherThanViewPort) {
+                elementBottom = currentElementAbsoluteTop + elementHeight;
                 windowBottom = newPos + viewPortHeight;
-                if (windowBottom != asideBottom) {
-                    newAsideTop = newAsideTop - (recapDataContainerHeight - viewPortHeight);
+                if (windowBottom !== elementBottom) {
+                    elementNewTop = elementNewTop - (elementHeight - viewPortHeight);
                 }
             }
 
-            if (asideTop != newAsideTop) {
-                if (newAsideTop < 0) {
-                    newAsideTop = 0;
+            if (currentElementRelativeTop !== elementNewTop) {
+                if (elementNewTop < 0) {
+                    elementNewTop = 0;
                 }
-				if (newAsideTop + recapDataContainerHeight > containerHeight) {
-                    newAsideTop = containerHeight - recapDataContainerHeight;
+                if (elementNewTop + elementHeight > containerAvailableHeight) {
+                    elementNewTop = containerAvailableHeight - elementHeight;
                 }
-                $recapDataContainer.css('top', newAsideTop);
+                $element.css('top', elementNewTop);
             }
         }
-		
-		$document.scroll(function () {
+
+        $document.scroll(function () {
             pos = $document.scrollTop();
 
             setTimeout(function () {
                 newPos = $document.scrollTop();
-                if (newPos == pos) {
+                if (newPos === pos) {
                     moveAside(newPos);
                 }
             }, 200);
         });
     }
 
-    stickyElement = setup;
+    $M.stickyElement = setup;
 }());
