@@ -27,10 +27,17 @@
 
         initMeasures();
 
-        $parentElement.resize(function () {
-            setInterval(initMeasures, 100);
-            moveAside($document.scrollTop());
-        });
+        if (jQuery().resize) {
+            $parentElement.resize(function () {
+                setInterval(initMeasures, 100);
+                moveAside($document.scrollTop());
+            });
+        } else {
+            $(window).resize(function () {
+                setInterval(initMeasures, 100);
+                moveAside($document.scrollTop());
+            });
+        }
 
         function moveAside(newPos) {
             var currentElementRelativeTop = getElementCssTop(),
