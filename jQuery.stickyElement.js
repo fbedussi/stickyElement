@@ -29,12 +29,12 @@
 
         if (jQuery().resize) {
             $parentElement.resize(function() {
-                setInterval(initMeasures, 100);
+                initMeasures();
                 moveAside($document.scrollTop());
             });
         } else {
             $(window).resize(function () {
-                setInterval(initMeasures, 100);
+                initMeasures();
                 moveAside($document.scrollTop());
             });
         }

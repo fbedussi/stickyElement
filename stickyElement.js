@@ -1,5 +1,5 @@
 (function () {
-    function setup(element) {
+    function setup(element, yOffset) {
 
         var $document = $(document),
             $element = $(element),
@@ -12,10 +12,15 @@
             elementOriginalRelativeTop,
             containerAvailableHeight,
             $parentElement = $element.parent();
+        
+        if (typeof yOffset === "undefined") {
+            yOffset = 0;
+        }
 
         function getElementCssTop() {
             return $element.css('top').replace("auto", "0").replace("px", "");
         }
+
         function initMeasures() {
             elementHeight = $element.outerHeight(true);
             elementOriginalAbsoluteTop = $element.offset().top - getElementCssTop();
@@ -25,24 +30,31 @@
             (elementHeight > viewPortHeight) ? elementHigherThanViewPort = true : elementHigherThanViewPort = false;
         }
 
-        initMeasures();
+        function reset() {
+            initMeasures();
+            moveAside($document.scrollTop());
+        }
 
+        initMeasures();
+        
         if (jQuery().resize) {
             $parentElement.resize(function () {
-                setInterval(initMeasures, 100);
-                moveAside($document.scrollTop());
+                reset();
+            });
+
+            $element.resize(function () {
+                reset();
             });
         } else {
             $(window).resize(function () {
-                setInterval(initMeasures, 100);
-                moveAside($document.scrollTop());
+                reset();
             });
         }
 
         function moveAside(newPos) {
             var currentElementRelativeTop = getElementCssTop(),
                 currentElementAbsoluteTop = $element.offset().top,
-                elementNewTop = newPos - elementOriginalAbsoluteTop,
+                elementNewTop = newPos - elementOriginalAbsoluteTop + yOffset,
                 elementBottom, windowBottom;
 
             if (elementHigherThanViewPort) {
@@ -59,12 +71,17 @@
                 }
                 if (elementNewTop + elementHeight > containerAvailableHeight) {
                     elementNewTop = containerAvailableHeight - elementHeight;
+                    $(element).addClass('bottomReached');
+                } else {
+                    $(element).removeClass('bottomReached');
                 }
+
                 $element.css('top', elementNewTop);
             }
         }
 
         $document.scroll(function () {
+            
             pos = $document.scrollTop();
 
             setTimeout(function () {
@@ -76,5 +93,5 @@
         });
     }
 
-    $M.stickyElement = setup;
+    stickyElement = setup;
 }());
