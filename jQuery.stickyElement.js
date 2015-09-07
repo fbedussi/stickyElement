@@ -1,5 +1,5 @@
 (function ($) {
-    $.fn.stickyElement = function () {
+    $.fn.stickyElement = function (yOffset) {
 
         var $document = $(document),
             $element = this,
@@ -12,6 +12,10 @@
             elementOriginalRelativeTop,
             containerAvailableHeight,
             $parentElement = $element.parent();
+        
+        if (typeof yOffset === "undefined") {
+            yOffset = 0;
+        }
 
         function getElementCssTop() {
             return $element.css('top').replace("auto", "0").replace("px", "");
@@ -24,27 +28,33 @@
             containerAvailableHeight = $parentElement.height() - elementOriginalRelativeTop;
             (elementHeight > viewPortHeight) ? elementHigherThanViewPort = true : elementHigherThanViewPort = false;
         }
+        
+        function reset() {
+            initMeasures();
+            moveAside($document.scrollTop());
+        }
 
         initMeasures();
 
         if (jQuery().resize) {
-            $parentElement.resize(function() {
-                initMeasures();
-                moveAside($document.scrollTop());
+            $parentElement.resize(function () {
+                reset();
+            });
+
+            $element.resize(function () {
+                reset();
             });
         } else {
             $(window).resize(function () {
-                initMeasures();
-                moveAside($document.scrollTop());
+                reset();
             });
         }
 
-        
 
         function moveAside(newPos) {
             var currentElementRelativeTop = getElementCssTop(),
                 currentElementAbsoluteTop = $element.offset().top,
-                elementNewTop = newPos - elementOriginalAbsoluteTop,
+                elementNewTop = newPos - elementOriginalAbsoluteTop + yOffset,
                 elementBottom, windowBottom;
 
             if (elementHigherThanViewPort) {
